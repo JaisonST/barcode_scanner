@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:qrscan/qrscan.dart' as scanner;
+import 'package:scan_preview/scan_preview_widget.dart';
+import 'package:flutter/foundation.dart';
 
-void main() {
-  runApp(MyApp());
-}
+void main() => runApp(MaterialApp(
+      home: MyApp(),
+    ));
 
 class MyApp extends StatefulWidget {
   @override
@@ -11,27 +12,83 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String code = "Not scanned yet";
+  String _result = '';
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Scan APP'),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Scan barcode example'),
+      ),
+      body: Center(
+        child: Column(
+          children: <Widget>[
+            RaisedButton(
+              child: Text('start scan'),
+              onPressed: () async {
+                final result = await Navigator.push(this.context,
+                    MaterialPageRoute(builder: (context) => ScanPreviewPage()));
+                setState(() {
+                  _result = result;
+                });
+              },
+            ),
+            Text('scan result: $_result')
+          ],
         ),
-        body: Center(
-          child: Text(code),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            scanner.scan().then((value) {
-              setState(() {
-                code = value;
-              });
-            });
-          },
-          child: Icon(Icons.scanner),
-        ),
+      ),
+    );
+  }
+}
+
+class ScanPreviewPage extends StatefulWidget {
+  @override
+  _ScanPreviewPageState createState() => _ScanPreviewPageState();
+}
+
+class _ScanPreviewPageState extends State<ScanPreviewPage> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Scan barcode example'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            flex: 6,
+            child: SizedBox(
+              child: ScanPreviewWidget(
+                onScanResult: (result) {
+                  debugPrint('scan result: $result');
+                  Navigator.pop(context, result);
+                },
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Container(
+              color: Colors.pinkAccent,
+              child: MaterialButton(
+                onPressed: () {
+                  String result = "NoID";
+                  Navigator.pop(context, result);
+                },
+              ),
+            ),
+          )
+        ],
       ),
     );
   }
