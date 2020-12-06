@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scan_preview/scan_preview_widget.dart';
 import 'package:flutter/foundation.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() => runApp(MaterialApp(
       home: MyApp(),
@@ -31,11 +32,25 @@ class _MyAppState extends State<MyApp> {
             RaisedButton(
               child: Text('start scan'),
               onPressed: () async {
-                final result = await Navigator.push(this.context,
-                    MaterialPageRoute(builder: (context) => ScanPreviewPage()));
-                setState(() {
-                  _result = result;
-                });
+                if (await Permission.camera.isGranted) {
+                  final result = await Navigator.push(this.context,
+                      MaterialPageRoute(builder: (context) => ScanPreviewPage()));
+                  setState(() {
+                    _result = result;
+                  });
+                } else {
+                  await Permission.camera.request().then((value) {
+                    Navigator.push(this.context,
+                        MaterialPageRoute(builder: (context) => ScanPreviewPage())).then((value){
+                          setState(() {
+                            _result = value;
+                          });
+                    });
+
+                  });
+                }
+
+
               },
             ),
             Text('scan result: $_result')
